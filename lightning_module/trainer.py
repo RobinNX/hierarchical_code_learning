@@ -256,6 +256,10 @@ class SupervisedTrainer(UnsupervisedTrainer):
 
     def training_step(self, data_batch, batch_nb):
 
+        current_step = self.trainer.global_step / (self.trainer.max_nb_epochs * self.trainer.total_batches)
+        self._update_model_parameters(current_step)
+        self._update_loss_scales(current_step)
+
         # forward computation
         t_x = data_batch["embedding"]
 
