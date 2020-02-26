@@ -88,6 +88,10 @@ class UnsupervisedTrainer(pl.LightningModule):
 
     def training_step(self, data_batch, batch_nb):
 
+        current_step = self.trainer.global_step / (self.trainer.max_nb_epochs * self.trainer.total_batches)
+        self._update_model_parameters(current_step)
+        self._update_loss_scales(current_step)
+
         # forward computation
         t_x = data_batch["embedding"]
         t_latent_code, t_code_prob, t_x_dash = self._model.forward(t_x)
@@ -215,8 +219,8 @@ class UnsupervisedTrainer(pl.LightningModule):
 
 
     def on_epoch_start(self):
-        self._update_model_parameters()
-        self._update_loss_scales()
+        # self._update_model_parameters()
+        # self._update_loss_scales()
 
 
 class SupervisedTrainer(UnsupervisedTrainer):
