@@ -223,7 +223,6 @@ class UnsupervisedTrainer(pl.LightningModule):
     def on_epoch_start(self):
         # self._update_model_parameters()
         # self._update_loss_scales()
-        self.train_dataloader().dataset.shuffle_hyponymy_dataset()
 
 
 class SupervisedTrainer(UnsupervisedTrainer):
