@@ -89,8 +89,8 @@ class UnsupervisedTrainer(pl.LightningModule):
     def training_step(self, data_batch, batch_nb):
 
         current_step = self.trainer.global_step / (self.trainer.max_nb_epochs * self.trainer.total_batches)
-        self._update_model_parameters(current_step)
-        self._update_loss_scales(current_step)
+        self._update_model_parameters(current_step, verbose=False)
+        self._update_loss_scales(current_step, verbose=False)
 
         # forward computation
         t_x = data_batch["embedding"]
@@ -182,7 +182,7 @@ class UnsupervisedTrainer(pl.LightningModule):
 
         return model
 
-    def _update_model_parameters(self, current_step: Optional[float] = None):
+    def _update_model_parameters(self, current_step: Optional[float] = None, verbose: bool = False):
         if current_step is None:
             current_step = self.current_epoch / self.trainer.max_nb_epochs
 
@@ -196,9 +196,10 @@ class UnsupervisedTrainer(pl.LightningModule):
                 setattr(self._model, parameter_name, new_value)
 
                 # DEBUG
-                print(f"{parameter_name}: {current_value:.2f} -> {new_value:.2f}")
+                if verbose:
+                    print(f"{parameter_name}: {current_value:.2f} -> {new_value:.2f}")
 
-    def _update_loss_scales(self, current_step: Optional[float] = None):
+    def _update_loss_scales(self, current_step: Optional[float] = None, verbose: bool = False):
         if current_step is None:
             current_step = self.current_epoch / self.trainer.max_nb_epochs
 
@@ -215,13 +216,14 @@ class UnsupervisedTrainer(pl.LightningModule):
                 loss_layer.scale = new_value
 
                 # DEBUG
-                print(f"{loss_name}: {current_value:.2f} -> {new_value:.2f}")
+                if verbose:
+                    print(f"{loss_name}: {current_value:.2f} -> {new_value:.2f}")
 
 
     def on_epoch_start(self):
         # self._update_model_parameters()
         # self._update_loss_scales()
-        pass
+        self.train_dataloader().dataset.shuffle_hyponymy_dataset()
 
 
 class SupervisedTrainer(UnsupervisedTrainer):
@@ -257,8 +259,8 @@ class SupervisedTrainer(UnsupervisedTrainer):
     def training_step(self, data_batch, batch_nb):
 
         current_step = self.trainer.global_step / (self.trainer.max_nb_epochs * self.trainer.total_batches)
-        self._update_model_parameters(current_step)
-        self._update_loss_scales(current_step)
+        self._update_model_parameters(current_step, verbose=False)
+        self._update_loss_scales(current_step, verbose=False)
 
         # forward computation
         t_x = data_batch["embedding"]
@@ -377,6 +379,6 @@ class SupervisedTrainer(UnsupervisedTrainer):
         return {"val_loss":loss, "log":metrics}
 
     def on_epoch_start(self):
-        self._update_model_parameters()
-        self._update_loss_scales()
+        # self._update_model_parameters()
+        # self._update_loss_scales()
         self.train_dataloader().dataset.shuffle_hyponymy_dataset()
