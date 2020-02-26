@@ -223,6 +223,7 @@ class UnsupervisedTrainer(pl.LightningModule):
     def on_epoch_start(self):
         # self._update_model_parameters()
         # self._update_loss_scales()
+        pass
 
 
 class SupervisedTrainer(UnsupervisedTrainer):
