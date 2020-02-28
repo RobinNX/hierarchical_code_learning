@@ -175,19 +175,25 @@ class FastTextDataset(AbstractWordEmbeddingsDataset):
         if enable_phrase_composition:
             self._init_mwe_tokenizer()
 
+    def _get_normalized_word_vector(self, entity: str):
+        vec = self.model.get_word_vector(entity)
+        vec = vec / np.linalg.norm(vec)
+        return vec
+
     def encode_phrase(self, phrase: str):
         lst_tokens = self.phrase_splitter(phrase)
         vec_r = np.mean(np.stack([self.model.get_word_vector(token) for token in lst_tokens]), axis=0)
+        vec_r = vec_r / np.linalg.norm(vec_r)
         return vec_r
 
     def encode(self, entity: str):
         if entity in self.vocab:
-            return self.model.get_word_vector(entity)
+            return self._get_normalized_word_vector(entity)
         else:
             if self._enable_phrase_composition:
                 return self.encode_phrase(entity)
             else:
-                return self.model.get_word_vector(entity)
+                return self._get_normalized_word_vector(entity)
 
     # fastText embedding can encode arbitrary string.
     def is_encodable(self, entity: str) -> bool:
